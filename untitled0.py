@@ -1,45 +1,77 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 11 14:17:55 2019
+Created on Tue Nov 12 01:06:55 2019
 
 @author: matthiasboeker
-Explorative Analysis"""
+"""
+"Analyzing Timeseries"
+import pandas as pd
 import numpy as np
+
+def difference(dataset, interval=1):
+    ar = np.zeros(len(dataset)-1)
+    for i in range(interval, len(dataset)):
+        ar[i-interval] = dataset.iloc[i] - dataset.iloc[i - interval]
+    return ar
+
+
+#Safe TS as DF
+csts = pd.DataFrame(cos_ts)
+
+#Outliner detection 
+plt.plot(csts)
+plt.ylabel('Cosine Similarity')
+plt.show()
+
+outliner = np.where(csts<0.98)[0]
+
+#For simplicity: Replace outliner with mean 
+csts.iloc[outliner] = [np.mean(csts),np.mean(csts),np.mean(csts)]
+
+#Check plotted ts
+plt.plot(csts)
+plt.ylabel('Cosine Similarity')
+plt.show()
+
+
+#Smoothing the Data 
+sm_csts = csts.rolling(window=10).mean()
+
+#Plot smoothed TS
+plt.plot(dif_csts)
+plt.ylabel('Smoothed Cosine Similarity')
+plt.show()
+
+#Testing for Stationarity 
+sm_csts.hist()
+
+#Examine variance of the first and second half
+split = int(len(sm_csts) / 2)
+sm_csts1, sm_csts2 = sm_csts[0:split], sm_csts[split:]
+mean1, mean2 = sm_csts1.mean(), sm_csts2.mean()
+var1, var2 = sm_csts1.var(), sm_csts2.var()
+print('Variance 1:', var1, 'Variance 2:', var2)
+
+#KPSS and ADFULLER TEST
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.stattools import kpss
-from statsmodels.graphics.tsaplots import plot_acf
-from statsmodels.tsa.statespace.tools import diff
-"Examine TS for Stationarity 
 
-print(' First half of 2016, Var:',np.var(dat_series_2016.iloc[0:int(len(dat_series_2016)/2),3]))
-print(' Second half of 2016, Var:',np.var(dat_series_2016.iloc[int(len(dat_series_2016)/2):,3]))
-print(' Difference between, Var:',np.var(dat_series_2016.iloc[0:int(len(dat_series_2016)/2),3])-np.var(dat_series_2016.iloc[int(len(dat_series_2016)/2):,3]))
+adfuller_res = adfuller(csts[0])
+'AdFuller Test rejects H0 -> TS is stationary'
+kpss_res = kpss(csts[0])
+'KPSS Test rejects H0 -> TS is non stationary'
 
-print(' First half of 2017, Var:',np.var(dat_series_2017.iloc[0:int(len(dat_series_2017)/2),3]))
-print(' Second half of 2017, Var:',np.var(dat_series_2017.iloc[int(len(dat_series_2017)/2):,3]))
-print(' Difference between, Var:',np.var(dat_series_2017.iloc[0:int(len(dat_series_2017)/2),3])-np.var(dat_series_2017.iloc[int(len(dat_series_2017)/2):,3]))
-
-
-print(' First half of 2018, Var:',np.var(dat_series_2018.iloc[0:int(len(dat_series_2018)/2),3]))
-print(' Second half of 2018, Var:',np.var(dat_series_2018.iloc[int(len(dat_series_2018)/2):,3]))
-print(' Difference between, Var:',np.var(dat_series_2018.iloc[0:int(len(dat_series_2018)/2),3])-np.var(dat_series_2018.iloc[int(len(dat_series_2018)/2):,3]))
+#Try to differenciate TS
+dif_csts = difference(csts,1)
+adfuller_res = adfuller(dif_csts)
+'AdFuller Test rejects H0 -> TS is stationary'
+kpss_res = kpss(dif_csts)
+'KPSS Test rejects H0 -> TS is non stationary'
 
 
-print(' First half of 2019, Var:',np.var(dat_series_2019.iloc[0:int(len(dat_series_2019)/2),3]))
-print(' Second half of 2019, Var:',np.nanvar(dat_series_2019.iloc[int(len(dat_series_2019)/2):,3]))
-print(' Difference between, Var:',np.var(dat_series_2019.iloc[0:int(len(dat_series_2019)/2),3])-np.var(dat_series_2019.iloc[int(len(dat_series_2019)/2):,3]))
-
-'Testing for stationarity 
-kpsstest_2016 = kpss(diff(dat_series_2016.iloc[:,3].dropna()), regression='c')
-kpsstest_2017 = kpss(dat_series_2017.iloc[:,3].dropna(), regression='ct')
-kpsstest_2018 = kpss(dat_series_2018.iloc[:,3].dropna(), regression='ct')
-kpsstest_2019 = kpss(dat_series_2019.iloc[:,3].dropna(), regression='ct')
-
-adf_test_2016 = adfuller(dat_series_2016.iloc[:,3].dropna())
-adf_test_2017 = adfuller(dat_series_2017.iloc[:,3].dropna())
-adf_test_2018 = adfuller(dat_series_2018.iloc[:,3].dropna())
-adf_test_2019 = adfuller(dat_series_2019.iloc[:,3].dropna())
 
 
-plot_acf(diff(dat_series_2016.iloc[:,3].dropna(),k_diff=1), lags = 50)
+
+
+

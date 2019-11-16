@@ -27,6 +27,7 @@ day_ahead_nans_full = full_dat_series[np.isnan(full_dat_series.iloc[:,1])]
 #Approach: Using Total_Load as Replacement!
 
 n_full_dat_series = pd.DataFrame(full_dat_series.values)
+n_full_dat_series.columns = col_names[1:]
 n_full_dat_series['Day-ahead Total Load Forecast'] = np.where(np.isnan(n_full_dat_series['Day-ahead Total Load Forecast']),n_full_dat_series.iloc[:,2],n_full_dat_series.iloc[:,1])
 left_nan = n_full_dat_series[np.isnan(n_full_dat_series['Day-ahead Total Load Forecast'])]
 
@@ -41,3 +42,4 @@ cc = cc.T
 cc = pd.DataFrame(cc)
 cc = cc.fillna(method='ffill',axis=1)
 
+np.sqrt(dat_series_2017['Total Load']).hist(bins=100)

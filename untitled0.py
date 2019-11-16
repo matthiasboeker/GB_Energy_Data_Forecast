@@ -9,22 +9,17 @@ Created on Tue Nov 12 01:06:55 2019
 import pandas as pd
 import numpy as np
 
-def difference(dataset, interval=1):
-    ar = np.zeros(len(dataset)-1)
-    for i in range(interval, len(dataset)):
-        ar[i-interval] = dataset.iloc[i] - dataset.iloc[i - interval]
-    return ar
-
 
 #Safe TS as DF
-csts = pd.DataFrame(cos_ts)
+csts = pd.DataFrame(cos_sim)
+csts.hist(bins=50)
 
 #Outliner detection 
 plt.plot(csts)
 plt.ylabel('Cosine Similarity')
 plt.show()
 
-outliner = np.where(csts<0.98)[0]
+outliner = np.where(csts<0.96)[0]
 
 #For simplicity: Replace outliner with mean 
 csts.iloc[outliner] = [np.mean(csts),np.mean(csts),np.mean(csts)]
@@ -39,7 +34,7 @@ plt.show()
 sm_csts = csts.rolling(window=10).mean()
 
 #Plot smoothed TS
-plt.plot(dif_csts)
+plt.plot(sm_csts)
 plt.ylabel('Smoothed Cosine Similarity')
 plt.show()
 
